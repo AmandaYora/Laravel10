@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Hash;
+use App\Services\Attribute as AttributeService;
 
 class User extends Model
 {
@@ -33,5 +34,11 @@ class User extends Model
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = Hash::needsRehash($value) ? Hash::make($value) : $value;
+    }
+
+    public function getMappedAttributes()
+    {
+        $attributeService = new AttributeService(new \App\Models\Attribute());
+        return $attributeService->getMappedAttributesByUserId($this->user_id);
     }
 }

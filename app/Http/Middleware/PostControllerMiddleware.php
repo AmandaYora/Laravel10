@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\Result;
+use App\Services\Result;
 
 class PostControllerMiddleware
 {

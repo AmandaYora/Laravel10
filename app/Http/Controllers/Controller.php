@@ -38,6 +38,11 @@ class Controller extends BaseController
         return $this->person->getCurrentUser($guid);
     }
 
+    public function getUserAttributes($guid = null)
+    {
+        return $this->person->getUserAttributes($guid);
+    }
+
     public function responseApi($data)
     {
         return response()->json($data);

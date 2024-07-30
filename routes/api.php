@@ -23,3 +23,4 @@ use App\Http\Controllers\Api\ApiController;
 Route::post('/login', [ApiController::class, 'login']);
 Route::post('/register', [ApiController::class, 'register']);
 Route::post('/get-user', [ApiController::class, 'getUser']);
+Route::post('/get-user-attribute', [ApiController::class, 'getAttribute']);

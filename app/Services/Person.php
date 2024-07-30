@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
 use App\Models\User;
 use App\Models\Role;
+use App\Services\Attribute as AttributeService;
 
 
 class Person extends Model
@@ -153,29 +154,18 @@ class Person extends Model
             $user = $query->first();
         
             if ($user) {
-                if ($user->role_id == 2) {
-                    $userData = $user->toArray();
-                    $userData['stores'] = [];
-    
-                    foreach ($user->userMappingStores as $mappingStore) {
-                        $store = $mappingStore->store->toArray();
-                        $store['target_penjualan'] = [];
-    
-                        foreach ($mappingStore->store->targetMappingStores as $targetMappingStore) {
-                            $targetPenjualan = $targetMappingStore->targetPenjualan->toArray();
-                            $store['target_penjualan'][] = $targetPenjualan;
-                        }
-    
-                        $userData['stores'][] = $store;
-                    }
-    
-                    unset($userData['user_mapping_stores']);
-                }
-    
                 $result->code = Result::CODE_SUCCESS;
-                unset($userData['password']);
-                unset($userData['role_id']);
-                $result->data = $userData;
+                unset($user['password']);
+                unset($user['role_id']);
+                unset($user['token']);
+                
+                $mappedAttributes = $user->getMappedAttributes();
+                if (!empty($mappedAttributes)) {
+                    $user['attribute'] = $mappedAttributes;
+                }
+
+                $result->data = $user;
+                
                 return $result;
             }
 
@@ -189,6 +179,31 @@ class Person extends Model
         }
 
         return $result;
+    }
+
+    public function getUserAttributes($guid = null)
+    {
+        $userResult = $this->getCurrentUser($guid);
+
+        if ($userResult->code === Result::CODE_SUCCESS) {
+            $user = $userResult->data;
+            $userId = $user->user_id;
+            $code = $user->code;
+
+            // Instansiasi layanan Attribute secara langsung
+            $attributeService = new AttributeService(new \App\Models\Attribute());
+            $attributes = $attributeService->getMappedAttributesByUserId($userId);
+
+            $user = [];
+            $user['user_id'] = $userId;
+            $user['code'] = $code;
+            $user['attributes'] = $attributes;
+            $userResult->data = $user;
+            return $userResult;
+        }
+        
+        $userResult->info = 'failed';
+        return $userResult;
     }
 
 }
