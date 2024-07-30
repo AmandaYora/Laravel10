@@ -1,5 +1,5 @@
 <?php
-namespace App\Models;
+namespace App\Services;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
