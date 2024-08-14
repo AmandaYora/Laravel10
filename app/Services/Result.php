@@ -19,7 +19,7 @@ class Result
      */
     public function __construct()
     {
-        $this->guid = null;
+        $this->guid = 0;
         $this->code = self::CODE_SUCCESS; // Default code indicating success
         $this->info = 'success'; // Default info indicating success
         $this->data = null;

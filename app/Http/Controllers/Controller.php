@@ -35,7 +35,7 @@ class Controller extends BaseController
 
     public function getCurrentUser($guid = null)
     {
-        return $this->person->getCurrentUser($guid);
+        return $this->person->getCurrentUser($guid) ?? false;
     }
 
     public function getUserAttributes($guid = null)
@@ -53,8 +53,8 @@ class Controller extends BaseController
         return Session::get('user_token');
     }
 
-    public function saveUserAttr($guid = null)
+    public function saveUserAttr($guid, $data, $mode = Person::MODE_TOKEN)
     {
-        return $this->person->saveUserAttr($guid);
+        return $this->person->saveUserAttr($guid, $data, $mode);
     }
 }

@@ -12,6 +12,8 @@ use App\Services\Attribute as AttributeService;
 
 class Person extends Model
 {
+    const MODE_TOKEN = 1;
+    CONST MODE_ID = 2;
     // Define a constant for the error message
     const USER_NOT_FOUND_MESSAGE = 'User not found or session expired';
 
@@ -169,16 +171,11 @@ class Person extends Model
                 return $result;
             }
 
-            $result->code = Result::CODE_ERROR;
-            $result->info = 'failed';
-            $result->message = self::USER_NOT_FOUND_MESSAGE;
         } catch (\Exception $e) {
-            $result->code = Result::CODE_ERROR;
-            $result->info = 'failed';
-            $result->message = $e->getMessage();
+            return false;
         }
 
-        return $result;
+        return false;
     }
 
     public function getUserAttributes($guid = null)
@@ -206,12 +203,21 @@ class Person extends Model
         return $userResult;
     }
 
-    public function saveUserAttr($guid, $data){
+    public function saveUserAttr($guid, $data, $mode = self::MODE_TOKEN){
         $user = $this->getCurrentUser($guid);
-        $user_id = $user->data->user_id;
 
+        if ($user->code != Result::CODE_SUCCESS) {
+            return $user;
+        }
+
+        if($mode == self::MODE_TOKEN){
+            $user_id = $user->data->user_id;
+        }elseif($mode == self::MODE_ID){
+            $user_id = $data['user_id'];
+        }
+        
         $attributeService = new AttributeService(new \App\Models\Attribute());
-        $saveAttr = $attributeService->saveAttr($user_id, $data);
+        $saveAttr = $attributeService->saveAttr($user_id, $data, $mode);
 
         return $saveAttr;
     }

@@ -62,11 +62,14 @@ class Attribute
         }
     }
 
-    public function saveAttr($userId, array $data)
+    public function saveAttr($userId, array $data, $mode)
     {
-        foreach ($data as $attributeName => $details) {
-            $value = $details['value'] ?? null;
-            $type = $details['type'] ?? null;
+        if($mode == Person::MODE_ID){
+            unset($data['user_id']);
+        }
+
+        foreach ($data as $attributeName => $value) {
+            $type = gettype($value);
 
             $result = $this->saveAttribute($userId, $attributeName, $value, $type);
             if (!$result) {

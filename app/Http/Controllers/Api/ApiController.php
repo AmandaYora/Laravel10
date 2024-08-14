@@ -17,6 +17,13 @@ class ApiController extends Controller
         Entities::Publish();
 
         $data = $this->getRequest->data;
+        $result = new Result();
+
+        if (!isset($data['code']) || !isset($data['password'])) {
+            $result->info = "code and password is required!";
+            return $this->responseApi($result);
+        }
+
         $login = $this->authLogin($data['code'], $data['password']);
 
         return $this->responseApi($login);
@@ -53,19 +60,33 @@ class ApiController extends Controller
     public function saveUserAttribute()
     {
         Entities::Publish();
-        
-        $guid = $this->getRequest->guid;
-        $saveAttr = $this->saveUserAttr($guid);
-        $user = $this->getCurrentUser($guid);
-        $userId = $user->data->user_id;
-
         $result = new Result();
+
+        $guid = $this->getRequest->guid;
+        $data = $this->getRequest->data;
+
+        if (!isset($data)) {
+            $result->code = Result::CODE_ERROR;
+            $result->info = "data is required!";
+            return $this->responseApi($result);
+        }
+
+        $saveAttr = $this->saveUserAttr($guid, $data);
+        
+        $user = $this->getCurrentUser($guid);
+        $userId = $user->code == Result::CODE_SUCCESS ? $user->data->user_id : null;
+
+        
         if ($saveAttr) {
             $result->code = Result::CODE_SUCCESS;
             $result->info = "Attribute Berhasil Di tambahkan untuk user_id $userId";
         }else{
             $result->code = Result::CODE_ERROR;
             $result->info = "Attribute Gagal Di tambahkan untuk user_id $userId";
+        }
+
+        if (is_object($saveAttr)) {
+            return $this->responseApi($saveAttr);
         }
         
         return $this->responseApi($result);
