@@ -71,7 +71,12 @@ class ApiController extends Controller
             return $this->responseApi($result);
         }
 
-        $saveAttr = $this->saveUserAttr($guid, $data);
+        $mode = null;
+        if (isset($data['user_id']) && !empty($data['user_id'])) {
+            $mode = Person::MODE_ID;
+        }
+
+        $saveAttr = $this->saveUserAttr($guid, $data, $mode);
         
         $user = $this->getCurrentUser($guid);
         $userId = $user->code == Result::CODE_SUCCESS ? $user->data->user_id : null;
