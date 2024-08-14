@@ -20,7 +20,8 @@ use App\Http\Controllers\Api\ApiController;
 // });
 
 
-Route::post('/login', [ApiController::class, 'login']);
-Route::post('/register', [ApiController::class, 'register']);
-Route::post('/get-user', [ApiController::class, 'getUser']);
-Route::post('/get-user-attribute', [ApiController::class, 'getAttribute']);
+Route::post('/login', [ApiController::class, 'login'])->name('api.login');
+Route::post('/register', [ApiController::class, 'register'])->name('api.register');
+Route::post('/get-user', [ApiController::class, 'getUser'])->name('api.getUser');
+Route::post('/get-user-attribute', [ApiController::class, 'getAttribute'])->name('api.getUserAttribute');
+Route::post('/save-user-attribute', [ApiController::class, 'saveUserAttribute'])->name('api.saveUserAttribute');

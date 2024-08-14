@@ -50,4 +50,25 @@ class ApiController extends Controller
         return $this->responseApi($user);
     }
 
+    public function saveUserAttribute()
+    {
+        Entities::Publish();
+        
+        $guid = $this->getRequest->guid;
+        $saveAttr = $this->saveUserAttr($guid);
+        $user = $this->getCurrentUser($guid);
+        $userId = $user->data->user_id;
+
+        $result = new Result();
+        if ($saveAttr) {
+            $result->code = Result::CODE_SUCCESS;
+            $result->info = "Attribute Berhasil Di tambahkan untuk user_id $userId";
+        }else{
+            $result->code = Result::CODE_ERROR;
+            $result->info = "Attribute Gagal Di tambahkan untuk user_id $userId";
+        }
+        
+        return $this->responseApi($result);
+    }
+
 }

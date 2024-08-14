@@ -206,4 +206,14 @@ class Person extends Model
         return $userResult;
     }
 
+    public function saveUserAttr($guid, $data){
+        $user = $this->getCurrentUser($guid);
+        $user_id = $user->data->user_id;
+
+        $attributeService = new AttributeService(new \App\Models\Attribute());
+        $saveAttr = $attributeService->saveAttr($user_id, $data);
+
+        return $saveAttr;
+    }
+
 }

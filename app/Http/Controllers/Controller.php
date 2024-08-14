@@ -52,4 +52,9 @@ class Controller extends BaseController
     {
         return Session::get('user_token');
     }
+
+    public function saveUserAttr($guid = null)
+    {
+        return $this->person->saveUserAttr($guid);
+    }
 }
