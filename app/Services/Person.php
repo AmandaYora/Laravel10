@@ -22,12 +22,20 @@ class Person extends Model
         $result = new Result();
 
         try {
-            $user = User::with('role')
+            $user = User::with('roles.role')
                         ->where('email', $identifier)
                         ->orWhere('code', $identifier)
                         ->first();
 
             if ($user && Hash::check($password, $user->password)) {
+
+                if($user->is_verify == "false" || $user->is_verify == "0"){
+                    $result->code = Result::CODE_ERROR;
+                    $result->info = 'failed';
+                    $result->message = 'Your account has not been verified yet.';
+                    return $result;
+                }
+
                 $uuid = Str::uuid()->toString();
                 $user->token = str_replace('-', '', $uuid);
                 $save = $user->save();
@@ -43,7 +51,16 @@ class Person extends Model
 
                 $result->code = Result::CODE_SUCCESS;
                 unset($user['password']);
-                unset($user['role_id']);
+                unset($user['roles']);
+
+                $roles = null;
+                $mappedRoles = $user->getMappedRoles();
+                if (!empty($mappedRoles)) {
+                    $roles = $mappedRoles;
+                }
+
+                $user['roles'] = $roles;
+
                 $result->data = $user;
                 return $result;
             }
@@ -60,7 +77,7 @@ class Person extends Model
         return $result;
     }
 
-    public function register(array $data)
+    public function register($data)
     {
         $result = new Result();
 
@@ -108,20 +125,21 @@ class Person extends Model
             $user->email = $data['email'];
             $user->password = $data['password'];
             $user->token = str_replace('-', '', Str::uuid()->toString());
-            $user->role_id = Role::ROLE_USER;
+            $user->is_verify = 'false';
 
-            if (!$user->save()) {
+            $save = $user->save();
+
+            if (!$save) {
                 $result->code = Result::CODE_ERROR;
                 $result->info = 'failed';
                 $result->message = 'Failed to register user';
                 return $result;
             }
 
-            $user->load('role');
             $result->code = Result::CODE_SUCCESS;
             unset($user['password']);
             unset($user['token']);
-            unset($user['role_id']);
+            $result->message = "Your request has been submitted and is pending admin verification.";
             $result->data = $user;
         } catch (\Exception $e) {
             $result->code = Result::CODE_ERROR;
@@ -137,7 +155,7 @@ class Person extends Model
         $result = new Result();
 
         try {
-            $query = User::with('role');
+            $query = User::with(['roles.role']);
         
             if ($guid) {
                 $query->where('token', $guid);
@@ -160,12 +178,21 @@ class Person extends Model
                 unset($user['password']);
                 unset($user['role_id']);
                 unset($user['token']);
+                unset($user['roles']);
                 
                 $mappedAttributes = $user->getMappedAttributes();
                 if (!empty($mappedAttributes)) {
                     $user['attribute'] = $mappedAttributes;
                 }
 
+                $roles = null;
+                $mappedRoles = $user->getMappedRoles();
+                if (!empty($mappedRoles)) {
+                    $roles = $mappedRoles;
+                }
+
+                $user['roles'] = $roles;
+                
                 $result->data = $user;
                 
                 return $result;
@@ -177,6 +204,7 @@ class Person extends Model
 
         return false;
     }
+
 
     public function getUserAttributes($guid = null)
     {

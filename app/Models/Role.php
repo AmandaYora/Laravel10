@@ -18,12 +18,18 @@ class Role extends Model
 
     protected $fillable = [
         'role_name',
+        'description',
     ];
 
     protected $hidden = [];
 
     public function users()
     {
-        return $this->hasMany(User::class, 'role_id', 'role_id');
+        return $this->hasMany(RoleAccess::class, 'role_id', 'role_id');
+    }
+
+    public function permissions()
+    {
+        return $this->hasMany(RolePermission::class, 'role_id', 'role_id');
     }
 }

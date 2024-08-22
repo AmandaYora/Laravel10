@@ -9,6 +9,7 @@ use App\Services\Result;
 use App\Services\Entities;
 use App\Services\Person;
 use App\Services\GetRequest;
+use Illuminate\Support\Facades\Session;
 
 class Controller extends BaseController
 {
@@ -28,18 +29,26 @@ class Controller extends BaseController
         return $this->person->login($identifier, $password);
     }
 
-    public function authRegister(array $data)
+    public function authRegister($data)
     {
         return $this->person->register($data);
     }
 
     public function getCurrentUser($guid = null)
     {
-        return $this->person->getCurrentUser($guid) ?? false;
+        if (is_null($guid)) {
+            $guid = $this->getToken() ?? $this->getRequest->guid;
+        }
+
+        return $this->person->getCurrentUser($guid) ?: false;
     }
 
     public function getUserAttributes($guid = null)
     {
+        if (is_null($guid)) {
+            $guid = $this->getToken() ?? $this->getRequest->guid;
+        }
+
         return $this->person->getUserAttributes($guid);
     }
 
@@ -50,11 +59,15 @@ class Controller extends BaseController
 
     public function getToken()
     {
-        return Session::get('user_token');
+        return Session::get('user_token') ?? null;
     }
 
-    public function saveUserAttr($guid, $data, $mode = Person::MODE_TOKEN)
+    public function saveUserAttr($data, $mode = Person::MODE_TOKEN, $guid = null)
     {
+        if (is_null($guid)) {
+            $guid = $this->getToken() ?? $this->getRequest->guid;
+        }
+
         return $this->person->saveUserAttr($guid, $data, $mode);
     }
 }

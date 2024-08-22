@@ -17,7 +17,7 @@ class User extends Model
     protected $primaryKey = 'user_id';
 
     protected $fillable = [
-        'code', 'name', 'phone', 'email', 'password', 'token', 'nonce', 'role_id',
+        'code', 'name', 'phone', 'email', 'password', 'token', 'nonce', 'is_verify'
     ];
 
     protected $casts = [
@@ -25,11 +25,6 @@ class User extends Model
     ];
 
     protected $dates = ['deleted_at'];
-
-    public function role()
-    {
-        return $this->belongsTo(Role::class, 'role_id', 'role_id');
-    }
 
     public function setPasswordAttribute($value)
     {
@@ -41,4 +36,17 @@ class User extends Model
         $attributeService = new AttributeService(new \App\Models\Attribute());
         return $attributeService->getMappedAttributesByUserId($this->user_id);
     }
+
+    public function roles()
+    {
+        return $this->hasMany(RoleAccess::class, 'user_id', 'user_id');
+    }
+
+    public function getMappedRoles()
+    {
+        return $this->roles()->with('role')->get()->map(function ($roleAccess) {
+            return $roleAccess->role;
+        })->toArray();
+    }
+
 }

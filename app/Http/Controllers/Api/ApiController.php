@@ -20,6 +20,7 @@ class ApiController extends Controller
         $result = new Result();
 
         if (!isset($data['code']) || !isset($data['password'])) {
+            $result->code = Result::CODE_ERROR;
             $result->info = "code and password is required!";
             return $this->responseApi($result);
         }
@@ -42,18 +43,16 @@ class ApiController extends Controller
     public function getUser()
     {
         Entities::Publish();
+        $user = $this->getCurrentUser();
 
-        $guid = $this->getRequest->guid;
-        $user = $this->getCurrentUser($guid);
         return $this->responseApi($user);
     }
 
     public function getAttribute()
     {
         Entities::Publish();
+        $user = $this->getUserAttributes();
 
-        $guid = $this->getRequest->guid;
-        $user = $this->getUserAttributes($guid);
         return $this->responseApi($user);
     }
 
@@ -61,8 +60,6 @@ class ApiController extends Controller
     {
         Entities::Publish();
         $result = new Result();
-
-        $guid = $this->getRequest->guid;
         $data = $this->getRequest->data;
 
         if (!isset($data)) {
@@ -76,9 +73,9 @@ class ApiController extends Controller
             $mode = Person::MODE_ID;
         }
 
-        $saveAttr = $this->saveUserAttr($guid, $data, $mode);
+        $saveAttr = $this->saveUserAttr($data, $mode);
         
-        $user = $this->getCurrentUser($guid);
+        $user = $this->getCurrentUser();
         $userId = $user->code == Result::CODE_SUCCESS ? $user->data->user_id : null;
 
         

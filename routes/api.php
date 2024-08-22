@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\Api\MenuController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,3 +26,6 @@ Route::post('/register', [ApiController::class, 'register'])->name('api.register
 Route::post('/get-user', [ApiController::class, 'getUser'])->name('api.getUser');
 Route::post('/get-user-attribute', [ApiController::class, 'getAttribute'])->name('api.getUserAttribute');
 Route::post('/save-user-attribute', [ApiController::class, 'saveUserAttribute'])->name('api.saveUserAttribute');
+
+Route::post('/menu/move-up', [MenuController::class, 'menuMoveUp'])->name('api.menu.up');
+Route::post('/menu/move-down', [MenuController::class, 'menuMoveDown'])->name('api.menu.down');

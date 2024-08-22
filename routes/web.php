@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\MenuController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,7 +18,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-
-// Route::group(['prefix' => 'api'], function () {
-
-// });
+Route::get('/menus', [MenuController::class, 'index'])->name('menus.index');
