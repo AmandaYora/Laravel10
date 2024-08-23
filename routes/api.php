@@ -29,3 +29,5 @@ Route::post('/save-user-attribute', [ApiController::class, 'saveUserAttribute'])
 
 Route::post('/menu/move-up', [MenuController::class, 'menuMoveUp'])->name('api.menu.up');
 Route::post('/menu/move-down', [MenuController::class, 'menuMoveDown'])->name('api.menu.down');
+Route::post('/menu/save', [MenuController::class, 'menuSave'])->name('api.menu.save');
+Route::post('/menu/destroy', [MenuController::class, 'menuDelete'])->name('api.menu.destroy');

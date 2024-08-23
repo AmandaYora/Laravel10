@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Menu as MenuModel;
 use App\Models\Submenu as SubmenuModel;
+use Illuminate\Support\Str;
 
 class Menus
 {
@@ -30,7 +31,6 @@ class Menus
             }
 
             $menuToSwap = MenuModel::where('menu_sort', $currentSort - 1)
-                ->where('menu_type_id', $menu->menu_type_id)
                 ->first();
 
             if ($menuToSwap) {
@@ -86,7 +86,6 @@ class Menus
             $currentSort = $menu->menu_sort;
 
             $menuToSwap = MenuModel::where('menu_sort', $currentSort + 1)
-                ->where('menu_type_id', $menu->menu_type_id)
                 ->first();
 
             if ($menuToSwap) {
@@ -121,4 +120,81 @@ class Menus
 
         return true;
     }
+
+    public function saveMenu($data, $update = false, $menuId = null)
+    {
+        if ($update && $menuId) {
+            $menu = MenuModel::find($menuId);
+            if (!$menu) {
+                return null; // Menu tidak ditemukan, tidak bisa di-update
+            }
+        } else {
+            $menu = new MenuModel();
+            $maxSortMenu = MenuModel::orderBy('menu_sort', 'desc')->first();
+            $menu->menu_sort = $maxSortMenu ? $maxSortMenu->menu_sort + 1 : 1;
+        }
+
+        $menu->menu_icon = $data['menu_icon'];
+        $menu->menu = $data['menu'];
+        $menu->menu_slug = Str::slug($data['menu']);
+        $menu->menu_type_id = $data['menu_type_id'];
+        $menu->menu_redirect = $data['menu_redirect'];
+
+        if (substr($menu->menu_redirect, 0, 1) !== '/') {
+            $menu->menu_redirect = '/' . $menu->menu_redirect;
+        }
+
+
+        $menu->save();
+
+        if ($update) {
+            // Hapus submenus lama sebelum menyimpan yang baru
+            SubmenuModel::where('menu_id', $menu->menu_id)->delete();
+        }
+
+        if (isset($data['submenus']) && is_array($data['submenus']) && count($data['submenus']) > 0) {
+            foreach ($data['submenus'] as $submenuData) {
+                $submenu = new SubmenuModel();
+                $submenu->menu_id = $menu->menu_id;
+                $submenu->submenu = $submenuData['submenu'];
+                $submenu->submenu_slug = Str::slug($submenuData['submenu']);
+                $submenu->submenu_redirect = $submenuData['submenu_redirect'];
+
+                if (substr($submenu->submenu_redirect, 0, 1) !== '/') {
+                    $submenu->submenu_redirect = '/' . $submenu->submenu_redirect;
+                }
+
+
+                $maxSubSort = SubmenuModel::orderBy('submenu_sort', 'desc')->first();
+                $submenu->submenu_sort = $maxSubSort ? $maxSubSort->submenu_sort + 1 : 1;
+
+                $submenu->save();
+            }
+        }
+
+        return $menu;
+    }
+
+    public function menuDelete($menuId = null)
+    {
+        if (!$menuId) {
+            return false;
+        }
+    
+        $menu = MenuModel::find($menuId);
+    
+        if (!$menu) {
+            return false;
+        }
+    
+        $deletedMenuSort = $menu->menu_sort;
+    
+        SubmenuModel::where('menu_id', $menu->menu_id)->delete();
+        $menu->delete();
+    
+        MenuModel::where('menu_sort', '>', $deletedMenuSort)->decrement('menu_sort');
+    
+        return true;
+    }
+    
 }
