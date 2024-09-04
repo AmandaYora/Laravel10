@@ -26,7 +26,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($menus as $index => $menu)
+                            @foreach ($listMenu as $index => $menu)
                             <tr>
                                 <td>
                                     <div class="btn-group" role="group">

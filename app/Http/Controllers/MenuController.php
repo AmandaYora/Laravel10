@@ -11,13 +11,13 @@ class MenuController extends Controller
 {
     public function index()
     {
-        $menus = Menu::with('submenus', 'menuType')
+        $listMenu = Menu::with('submenus', 'menuType')
             ->orderBy('menu_sort', 'asc')
             ->get();
         $menuType = MenuType::all();
 
         $data = [
-            'menus' => $menus,
+            'listMenu' => $listMenu,
             'type' => $menuType
         ];
 
