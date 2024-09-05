@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Menu as MenuModel;
 use App\Models\Submenu as SubmenuModel;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 class Menus
 {
@@ -144,11 +145,25 @@ class Menus
             $menu->menu_redirect = '/' . $menu->menu_redirect;
         }
 
+        $menusave = $menu->save();
 
-        $menu->save();
+        if ($menusave) {
+            $viewDirectoryPath = resource_path('views/content/' . $menu->menu_slug);
 
+            if (!File::exists($viewDirectoryPath)) {
+                File::makeDirectory($viewDirectoryPath, 0755, true);
+            }
+
+            $indexFilePath = $viewDirectoryPath . '/index.blade.php';
+
+            $content = "<h1>Welcome to " . $menu->menu . " page</h1>\n";
+
+            if (!File::exists($indexFilePath)) {
+                File::put($indexFilePath, $content);
+            }
+        }
+        
         if ($update) {
-            // Hapus submenus lama sebelum menyimpan yang baru
             SubmenuModel::where('menu_id', $menu->menu_id)->delete();
         }
 
@@ -190,6 +205,12 @@ class Menus
         $deletedMenuSort = $menu->menu_sort;
     
         SubmenuModel::where('menu_id', $menu->menu_id)->delete();
+
+        $viewDirectoryPath = resource_path('views/content/' . $menu->menu_slug);
+        if (File::exists($viewDirectoryPath)) {
+            File::deleteDirectory($viewDirectoryPath);
+        }
+
         $menu->delete();
     
         MenuModel::where('menu_sort', '>', $deletedMenuSort)->decrement('menu_sort');

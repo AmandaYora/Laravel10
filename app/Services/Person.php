@@ -48,6 +48,7 @@ class Person extends Model
                 }
 
                 Session::put('user_token', $user->token);
+                session(['user_token' => $user->token]);
 
                 $result->code = Result::CODE_SUCCESS;
                 unset($user['password']);
@@ -205,6 +206,55 @@ class Person extends Model
         return false;
     }
 
+    public function getAllUsers($mode = self::MODE_TOKEN)
+    {
+        $result = new Result();
+
+        try {
+            $users = User::with(['roles.role'])->get();
+
+            if ($users->isEmpty()) {
+                $result->code = Result::CODE_ERROR;
+                $result->info = 'failed';
+                $result->message = self::USER_NOT_FOUND_MESSAGE;
+                return $result;
+            }
+
+            $usersData = [];
+            foreach ($users as $user) {
+                unset($user['password']);
+                unset($user['role_id']);
+                if ($mode !== self::MODE_ID) {
+                    unset($user['token']);
+                }
+
+                $mappedAttributes = $user->getMappedAttributes();
+                if (!empty($mappedAttributes)) {
+                    $user['attribute'] = $mappedAttributes;
+                }
+
+                $roles = null;
+                $mappedRoles = $user->getMappedRoles();
+                if (!empty($mappedRoles)) {
+                    $roles = $mappedRoles;
+                }
+
+                $user['roles'] = $roles;
+                $usersData[] = $user;
+            }
+
+            $result->code = Result::CODE_SUCCESS;
+            $result->data = $usersData;
+
+            return $result;
+
+        } catch (\Exception $e) {
+            $result->code = Result::CODE_ERROR;
+            $result->info = 'failed';
+            $result->message = $e->getMessage();
+            return $result;
+        }
+    }
 
     public function getUserAttributes($guid = null)
     {

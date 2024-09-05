@@ -52,12 +52,22 @@ $role = session('user.role');
 
             <li class="nav-item nav-category">Settings</li>
 
-            {{-- menu --}}
             <li class="nav-item">
-                <a href="{{ url('/attendance') }}" class="nav-link">
-                    <i class="link-icon" data-feather="calendar"></i>
-                    <span class="link-title">Menu Settings</span>
+                <a class="nav-link" data-bs-toggle="collapse" href="#menu-settings" role="button" aria-expanded="false" aria-controls="menu-settings">
+                    <i class="link-icon" data-feather="settings"></i> 
+                    <span class="link-title">Settings</span>
+                    <i class="link-arrow" data-feather="chevron-down"></i>
                 </a>
+                <div class="collapse" id="menu-settings">
+                    <ul class="nav sub-menu">
+                        <li class="nav-item">
+                            <a href="{{ url('/settings/general') }}" class="nav-link">Menu Setting</a> 
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url('/settings/user-access') }}" class="nav-link">User Access</a> 
+                        </li>
+                    </ul>
+                </div>
             </li>
             
         </ul>

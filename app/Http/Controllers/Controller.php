@@ -43,6 +43,18 @@ class Controller extends BaseController
         return $this->person->getCurrentUser($guid) ?: false;
     }
 
+    public function getAllUsers($mode = null)
+    {
+        $currentUser = $this->getCurrentUser();
+        if ($currentUser->code == Result::CODE_SUCCESS) {
+            $users = $this->person->getAllUsers($mode);
+
+            return $users;
+        }
+        return $currentUser;
+    }
+
+
     public function getUserAttributes($guid = null)
     {
         if (is_null($guid)) {
@@ -59,7 +71,7 @@ class Controller extends BaseController
 
     public function getToken()
     {
-        return Session::get('user_token') ?? null;
+        return (Session::get('user_token') ? Session::get('user_token') : session('user_token')) ?? null;
     }
 
     public function saveUserAttr($data, $mode = Person::MODE_TOKEN, $guid = null)

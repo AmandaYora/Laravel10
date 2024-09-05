@@ -48,6 +48,14 @@ class ApiController extends Controller
         return $this->responseApi($user);
     }
 
+    public function getAllUser()
+    {
+        Entities::Publish();
+        $user = $this->getAllUser();
+
+        return $this->responseApi($user);
+    }
+
     public function getAttribute()
     {
         Entities::Publish();
