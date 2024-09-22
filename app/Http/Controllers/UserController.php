@@ -11,9 +11,8 @@ class UserController extends Controller
 {
     public function user()
     {
-        $users = $this->getAllUsers(Person::MODE_ID);
-
-        return view('content.users.index', ['users' => $users->data]);
+        $users = $this->getAllUsers(Person::MODE_ID)->data ?? [];
+        return view('content.users.index', ['users' => $users]);
     }
 
     public function saveUser(Request $request)

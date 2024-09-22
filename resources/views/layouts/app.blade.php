@@ -1,4 +1,4 @@
-<!-- resources/views/layouts/app.blade.php -->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -60,6 +60,78 @@
             vertical-align: middle;
         }
     </style>
+    <style>
+        .role-selector {
+            position: fixed;
+            top: 80px;
+            right: 10px;
+            z-index: 1050;
+        }
+    
+        .btn-role-selector {
+            background-color: #4a5568;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+    
+        .btn-role-selector i {
+            font-size: 18px;
+        }
+    
+        .btn-role-selector:hover {
+            background-color: #2d3748;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            opacity: 1;
+        }
+    
+        .btn-role-selector:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.5);
+        }
+    
+        .modal-dialog-custom {
+            position: fixed;
+            top: 140px;
+            right: 10px;
+            margin: 0;
+            max-width: 240px;
+        }
+    
+        .modal-content {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    
+        .modal-body {
+            padding: 8px;
+        }
+    
+        .form-check {
+            margin-bottom: 8px;
+        }
+    
+        .form-check-label {
+            cursor: pointer;
+            font-size: 14px;
+        }
+    
+        .modal-body p {
+            text-align: center;
+            color: #6c757d;
+            margin: 0;
+            font-size: 14px;
+        }
+    </style>
     @yield('styles')
 </head>
 
@@ -74,6 +146,45 @@
             @include('partials.footer') <!-- Footer -->
         </div>
     </div>
+
+    <!-- Role Selector Button -->
+    <div class="role-selector">
+        <button type="button" class="btn-role-selector" data-bs-toggle="modal" data-bs-target="#roleModal">
+            <i class="fas fa-user-cog"></i>
+        </button>
+    </div>
+
+    <!-- Modal yang muncul di bawah tombol -->
+    <div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-custom">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form method="POST" action="{{ route('change.role') }}">
+                        @csrf
+                        @if(isset($currentUser->data->roles) && is_array($currentUser->data->roles))
+                            @foreach($currentUser->data->roles as $role)
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" 
+                                           name="activeRole" 
+                                           id="role{{ $role['role_id'] }}" 
+                                           value="{{ $role['role_id'] }}"
+                                           @if($activeRole['role_id'] == $role['role_id']) checked @endif
+                                           onchange="this.form.submit()">
+                                    <label class="form-check-label" for="role{{ $role['role_id'] }}">
+                                        {{ $role['role_name'] }}
+                                    </label>
+                                </div>
+                            @endforeach
+                        @else
+                            <p>Tidak ada role tersedia.</p>
+                        @endif
+                    </form> 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
         integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="

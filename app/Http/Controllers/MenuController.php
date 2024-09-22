@@ -23,4 +23,18 @@ class MenuController extends Controller
 
         return view('content.menu.index', $data);
     }
+
+    public function changeRole(Request $request)
+    {
+        $roleId = $request->input('activeRole');
+
+        $roleUser = $this->getCurrentUser()->data->roles;
+
+        $roleData = collect($roleUser)->firstWhere('role_id', $roleId);
+
+        session(['roles' => $roleData]);
+
+        return redirect()->back()->with('success', 'Role berhasil diubah.');
+
+    }
 }

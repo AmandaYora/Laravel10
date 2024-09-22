@@ -48,7 +48,8 @@ $role = session('user.role');
                     </li>
                 @endif
             @endforeach
-
+            
+            @if($activeRole['role_name'] == 'Admin')
 
             <li class="nav-item nav-category">Settings</li>
 
@@ -61,7 +62,7 @@ $role = session('user.role');
                 <div class="collapse" id="menu-settings">
                     <ul class="nav sub-menu">
                         <li class="nav-item">
-                            <a href="{{ url('/settings/general') }}" class="nav-link">Menu Setting</a> 
+                            <a href="{{ route('menus.index') }}" class="nav-link">Menu Setting</a> 
                         </li>
                         <li class="nav-item">
                             <a href="{{ url('/settings/user-access') }}" class="nav-link">User Access</a> 
@@ -69,6 +70,8 @@ $role = session('user.role');
                     </ul>
                 </div>
             </li>
+
+            @endif
             
         </ul>
     </div>

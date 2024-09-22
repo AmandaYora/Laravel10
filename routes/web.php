@@ -16,14 +16,19 @@ use App\Http\Controllers\AuthController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Route::get('/login', [AuthController::class, 'index'])->name('login');
 Route::post('/auth-login', [AuthController::class, 'login'])->name('auth.login');
 
-Route::get('/users', [UserController::class, 'user'])->name('user.index');
-Route::post('/users/save', [UserController::class, 'saveUser'])->name('users.save');
+Route::middleware(['check.token'])->group(function () {
 
-Route::get('/menus', [MenuController::class, 'index'])->name('menus.index');
+    Route::get('/', function () {
+        return view('welcome');
+    });
+
+    Route::get('/users', [UserController::class, 'user'])->name('user.index');
+    Route::post('/users/save', [UserController::class, 'saveUser'])->name('users.save');
+
+    Route::get('/settings/menus', [MenuController::class, 'index'])->name('menus.index');
+    Route::post('/change-role', [MenuController::class, 'changeRole'])->name('change.role');
+
+});
