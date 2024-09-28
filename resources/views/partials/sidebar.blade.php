@@ -49,7 +49,7 @@ $role = session('user.role');
                 @endif
             @endforeach
             
-            @if($activeRole['role_name'] == 'Admin')
+            @if($activeRole['role_id'] == 1 )
 
             <li class="nav-item nav-category">Settings</li>
 
@@ -65,7 +65,7 @@ $role = session('user.role');
                             <a href="{{ route('menus.index') }}" class="nav-link">Menu Setting</a> 
                         </li>
                         <li class="nav-item">
-                            <a href="{{ url('/settings/user-access') }}" class="nav-link">User Access</a> 
+                            <a href="{{ route('roles.index') }}" class="nav-link">Roles Management</a> 
                         </li>
                     </ul>
                 </div>

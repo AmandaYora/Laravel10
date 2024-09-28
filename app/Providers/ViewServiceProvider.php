@@ -20,12 +20,16 @@ class ViewServiceProvider extends ServiceProvider
             $controller = new Controller();
             $currentUser = $controller->getCurrentUser();
             $activeRole = session('roles', null);
+            $code_admin = 2;
+            $code_superadmin = 1;
 
             // Sertakan data menu dan user ke dalam semua view
             $view->with([
                 'menus' => $menus,          // Menyertakan data menu
                 'currentUser' => $currentUser, // Menyertakan data user yang sedang login
-                'activeRole' => $activeRole
+                'activeRole' => $activeRole,
+                'code_admin' => $code_admin,
+                'code_superadmin' => $code_superadmin
             ]);
         });
     }

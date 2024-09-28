@@ -9,7 +9,11 @@
                 <div class="card-body">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h6 class="card-title mb-0">Data Users</h6>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUserModal">
+                            Add User
+                        </button>
                     </div>
+
 
                     @if (session('error'))
                         <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert">
@@ -46,17 +50,46 @@
                                         <td>{{ $user->email }}</td>
                                         <td>{{ $user->is_verify ? 'Yes' : 'No' }}</td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
-                                                data-bs-target="#editUserModal" data-id="{{ $user->user_id }}"
-                                                data-code="{{ $user->code }}" data-name="{{ $user->name }}"
-                                                data-phone="{{ $user->phone }}" data-email="{{ $user->email }}"
-                                                data-is_verify="{{ $user->is_verify }}">
-                                                Edit
+                                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                                data-bs-toggle="modal" data-bs-target="#editUserModal"
+                                                data-id="{{ $user->user_id }}" data-code="{{ $user->code }}"
+                                                data-name="{{ $user->name }}" data-phone="{{ $user->phone }}"
+                                                data-email="{{ $user->email }}" data-is_verify="{{ $user->is_verify }}">
+                                                <i data-feather="edit"></i>
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-secondary"
-                                                onclick="getUserAttributes('{{ $user->token }}')">
-                                                Detail
+
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                onclick="showUserDetails({{ json_encode($user->attribute) }}, '{{ $user->user_id }}', '{{ $user->code }}', '{{ $user->name }}')">
+                                                <i data-feather="eye"></i>
                                             </button>
+
+                                            <form action="{{ route('users.delete', $user->user_id) }}" method="POST"
+                                                style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i data-feather="trash-2"></i>
+                                                </button>
+                                            </form>
+                                            @if ($activeRole['role_id'] == $code_admin || $activeRole['role_id'] == $code_superadmin)
+                                                <div class="dropdown d-inline">
+                                                    <button class="btn btn-sm btn-outline-dark" type="button"
+                                                        id="dropdownMenuButton{{ $user->user_id }}"
+                                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i data-feather="more-horizontal"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu"
+                                                        aria-labelledby="dropdownMenuButton{{ $user->user_id }}">
+                                                        <li>
+                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                                data-bs-target="#roleAccessModal"
+                                                                onclick="loadRoles({{ $user->user_id }}, {{ json_encode($user->roles) }})">
+                                                                <i data-feather="lock"></i> Role Access
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -64,6 +97,45 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Role Access -->
+    <div class="modal fade" id="roleAccessModal" tabindex="-1" aria-labelledby="roleAccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="roleAccessModalLabel">Manage Role Access</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{{ route('users.updateRoleAccess') }}">
+                    @csrf
+                    <input type="hidden" id="userId" name="user_id">
+                    <div class="modal-body">
+                        <div class="form-check">
+                            @foreach ($roles as $role)
+                                @if ($role->role_id != 1 || $activeRole['role_id'] == $code_superadmin)
+                                    <div class="mb-2">
+                                        <input class="form-check-input" type="checkbox" name="roles[]"
+                                            id="role_{{ $role->role_id }}" value="{{ $role->role_id }}"
+                                            {{-- Cek jika roles tidak null, kosong atau undefined --}}
+                                            @if (!empty($user->roles) && is_array($user->roles) && in_array($role->role_id, array_column($user->roles, 'role_id')))
+                                                checked
+                                            @endif>
+                                        <label class="form-check-label" for="role_{{ $role->role_id }}">
+                                            {{ $role->role_name }}
+                                        </label>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -97,16 +169,10 @@
                             <input type="email" class="form-control" id="editEmail" name="email" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editIsVerify" class="form-label">Is Verified</label>
-                            <select class="form-control" id="editIsVerify" name="is_verify" required>
-                                <option value="1">Yes</option>
-                                <option value="0">No</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
                             <label for="editPassword" class="form-label">Password</label>
                             <input type="password" class="form-control" id="editPassword" name="password">
-                            <small class="form-text text-muted">Leave blank if you don't want to change the password</small>
+                            <small class="form-text text-muted">Leave blank if you don't want to change the
+                                password</small>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -121,16 +187,15 @@
     <!-- Modal for Viewing User Details -->
     <div class="modal fade" id="detailUserModal" tabindex="-1" aria-labelledby="detailUserModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">User Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div id="userDetailsContent" class="p-3"
-                        style="border-radius: 10px; background-color: #f9f9f9; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                        <!-- User details will be loaded here -->
+                <div class="modal-body" style="max-height: 700px; overflow-y: auto;">
+                    <div id="userDetailsContent">
+                        <!-- User details will be dynamically loaded here -->
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -140,81 +205,106 @@
         </div>
     </div>
 
+
+
 @endsection
 
 @section('scripts')
     <script>
-        // Fungsi untuk Mengambil dan Menampilkan Detail User
-        function getUserAttributes(token) {
-            var formData = new FormData();
-            formData.append('guid', token); // Pastikan nama parameter sesuai dengan yang diharapkan API
+        function loadRoles(userId, userRoles) {
+            $('#userId').val(userId);
 
-            $.ajax({
-                url: '{{ route('api.getUserAttribute') }}',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.code === 0) {
-                        var userAttributes = response.data;
-                        var detailsHtml = `
-                        <div class="user-detail">
-                            <h5 class="user-detail-title">User Details</h5>
-                            <div class="user-detail-content">
-                                <div class="detail-grid">
-                    `;
-                        for (var label in userAttributes) {
-                            detailsHtml +=
-                                `<div class="detail-section"><strong>${label}:</strong> ${userAttributes[label]}</div>`;
-                        }
-                        detailsHtml += '</div></div></div>';
-                        $('#userDetailsContent').html(detailsHtml);
-                        $('#detailUserModal').modal('show');
-                    } else {
-                        alert(response.info);
-                    }
-                },
-                error: function() {
-                    alert('Failed to retrieve user details.');
-                }
+            // Loop through all roles and check if user has that role
+            userRoles.forEach(function(role) {
+                $('#role_' + role.role_id).prop('checked', true);
             });
         }
 
-        // Event Listener untuk Modal Edit User
         $('#editUserModal').on('show.bs.modal', function(event) {
-            var button = $(event.relatedTarget); // Tombol yang memicu modal
-            var user_id = button.data('id');
-            var code = button.data('code');
-            var name = button.data('name');
-            var phone = button.data('phone');
-            var email = button.data('email');
-            var is_verify = button.data('is_verify');
-
+            var button = $(event.relatedTarget);
             var modal = $(this);
-            modal.find('#editUserId').val(user_id);
-            modal.find('#editCode').val(code);
-            modal.find('#editName').val(name);
-            modal.find('#editPhone').val(phone);
-            modal.find('#editEmail').val(email);
-            if (is_verify) {
-                modal.find('#editIsVerify').val(1); // Set dropdown ke 'Yes'
-            } else {
-                modal.find('#editIsVerify').val(0); // Set dropdown ke 'No'
+
+            // Jika tombol Add User ditekan, reset semua field
+            if (button.text().trim() === "Add User") {
+                modal.find('#editUserId').val('');
+                modal.find('#editCode').val('');
+                modal.find('#editName').val('');
+                modal.find('#editPhone').val('');
+                modal.find('#editEmail').val('');
+                modal.find('#editIsVerify').val(1); // Set default value ke 'Yes'
+                modal.find('#editPassword').val(''); // Kosongkan field password
+            }
+
+            // Jika tombol Edit ditekan, isikan field dengan data user
+            if (button.data('id')) {
+                var user_id = button.data('id');
+                var code = button.data('code');
+                var name = button.data('name');
+                var phone = button.data('phone');
+                var email = button.data('email');
+                var is_verify = button.data('is_verify');
+
+                modal.find('#editUserId').val(user_id);
+                modal.find('#editCode').val(code);
+                modal.find('#editName').val(name);
+                modal.find('#editPhone').val(phone);
+                modal.find('#editEmail').val(email);
             }
         });
 
+
         $(document).ready(function() {
-            // Menghilangkan alert error setelah 4 detik
             setTimeout(function() {
                 $('#errorAlert').fadeOut('slow');
             }, 4000);
 
-            // Menghilangkan alert success setelah 4 detik
             setTimeout(function() {
                 $('#successAlert').fadeOut('slow');
             }, 4000);
         });
+
+        function showUserDetails(attributes, userId, code, name) {
+            var detailsHtml = `
+                <form class="user-details-section">
+                    <div class="mb-3">
+                        <label for="userId" class="form-label">User ID</label>
+                        <input type="text" class="form-control" id="userId" value="${userId}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Code</label>
+                        <input type="text" class="form-control" id="code" value="${code}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" value="${name}" readonly>
+                    </div>
+                    <hr>
+                    <h6 class="text-secondary">User Attributes</h6>
+                    <hr>
+            `;
+
+            for (var key in attributes) {
+                if (attributes.hasOwnProperty(key)) {
+                    detailsHtml += `
+                        <div class="mb-3">
+                            <label for="${key}" class="form-label">${capitalizeFirstLetter(key)}</label>
+                            <input type="text" class="form-control" id="${key}" value="${attributes[key]['value']}" readonly>
+                        </div>
+                    `;
+                }
+            }
+
+            detailsHtml += `
+                </form>
+            `;
+
+            $('#userDetailsContent').html(detailsHtml);
+            $('#detailUserModal').modal('show');
+        }
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
     </script>
 @endsection
 

@@ -6,21 +6,45 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
 use App\Services\Person;
+use App\Http\Controllers\Controller;
 
 class UserController extends Controller
 {
     public function user()
     {
         $users = $this->getAllUsers(Person::MODE_ID)->data ?? [];
-        return view('content.users.index', ['users' => $users]);
+        $roles = Role::all();
+
+        $data = [
+            'users' => $users,
+            'roles' => $roles,
+        ];
+
+        return view('content.users.index', $data);
     }
 
     public function saveUser(Request $request)
     {
-        $user = $request->input('user_id') ? User::find($request->input('user_id')) : new User;
+        if ($request->input('user_id')) {
+            $user = User::find($request->input('user_id'));
+        } else {
+            $user = User::withTrashed()->where('code', $request->input('code'))->first();
+            
+            if ($user) {
+                $user->restore();
+            } else {
+                $user = new User;
+            }
+
+            $is_new = true;
+        }
     
         $data = $request->except(['token', 'nonce', 'password']);
-    
+        
+        if ($is_new) {
+            $data['is_verify'] = 0;
+        }
+
         $user->fill($data);
     
         if ($request->filled('password')) {
@@ -32,7 +56,7 @@ class UserController extends Controller
         } else {
             return back()->with('error', 'Failed to save user.');
         }
-    }    
+    }
 
     public function deleteUser($id)
     {

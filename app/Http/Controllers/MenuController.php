@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Menu;
 use App\Models\Submenu;
 use App\Models\MenuType;
+use App\Http\Controllers\Controller;
 
 class MenuController extends Controller
 {
