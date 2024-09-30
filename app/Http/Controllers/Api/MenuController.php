@@ -9,6 +9,8 @@ use App\Services\Entities;
 use App\Services\Person;
 use App\Services\Menus;
 use App\Models\Menu;
+use App\Models\RolePermission;
+use App\Models\Role;
 use App\Services\Notification;
 use Illuminate\Support\Facades\Session;
 
@@ -152,4 +154,49 @@ class MenuController extends Controller
 
         return $this->responseApi($result);
     }
+
+    public function menuAccess()
+    {
+        Entities::Publish();
+
+        $data = $this->getRequest->data;
+        $result = new Result();
+
+        $selectedRoleId = $data['role_id'];
+        $rolePermissions = RolePermission::where('role_id', $selectedRoleId)->get()->keyBy('menu_id');
+
+        $result->data = $rolePermissions;
+
+        return $this->responseApi($result);
+    }
+
+    public function updateMenuAccess()
+    {
+        Entities::Publish();
+        $data = $this->getRequest->data;
+        $result = new Result();
+
+        foreach ($data as $item) {
+            $rs = RolePermission::updateOrCreate(
+                [
+                    'role_id' => $item['role_id'],
+                    'menu_id' => $item['menu_id']
+                ],
+                [
+                    'can_read' => $item['can_read'],
+                    'can_create' => $item['can_create'],
+                    'can_update' => $item['can_update'],
+                    'can_delete' => $item['can_delete'],
+                ]
+            );
+            if (!$rs) {
+                $result->code = Result::CODE_ERROR;
+                $result->info = "Failed update menu access";
+                return $this->responseApi($result);
+            }
+        }
+
+        return $this->responseApi($result);
+    }
+
 }

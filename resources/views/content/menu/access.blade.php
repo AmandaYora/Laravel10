@@ -40,7 +40,7 @@
                         <table id="menuAccessTable" class="table">
                             <thead>
                                 <tr>
-                                    <th>Menu / Sub-Menu</th>
+                                    <th>Menu</th>
                                     <th>Read</th>
                                     <th>Create</th>
                                     <th>Update</th>
@@ -49,27 +49,23 @@
                             </thead>
                             <tbody>
                                 @foreach ($menus as $menu)
-                                    <tr>
+                                    <tr data-menu-id="{{ $menu->menu_id }}">
                                         <td>{{ $menu->menu }}</td>
                                         <td>
                                             <input type="checkbox" class="form-check-input"
-                                                name="permissions[{{ $menu->menu_id }}][read]"
-                                                {{ isset($roleAccess[$menu->menu_id]) && $roleAccess[$menu->menu_id]->can_read == 1 ? 'checked' : '' }}>
+                                                name="permissions[{{ $menu->menu_id }}][read]">
                                         </td>
                                         <td>
                                             <input type="checkbox" class="form-check-input"
-                                                name="permissions[{{ $menu->menu_id }}][create]"
-                                                {{ isset($roleAccess[$menu->menu_id]) && $roleAccess[$menu->menu_id]->can_create == 1 ? 'checked' : '' }}>
+                                                name="permissions[{{ $menu->menu_id }}][create]">
                                         </td>
                                         <td>
                                             <input type="checkbox" class="form-check-input"
-                                                name="permissions[{{ $menu->menu_id }}][update]"
-                                                {{ isset($roleAccess[$menu->menu_id]) && $roleAccess[$menu->menu_id]->can_update == 1 ? 'checked' : '' }}>
+                                                name="permissions[{{ $menu->menu_id }}][update]">
                                         </td>
                                         <td>
                                             <input type="checkbox" class="form-check-input"
-                                                name="permissions[{{ $menu->menu_id }}][delete]"
-                                                {{ isset($roleAccess[$menu->menu_id]) && $roleAccess[$menu->menu_id]->can_delete == 1 ? 'checked' : '' }}>
+                                                name="permissions[{{ $menu->menu_id }}][delete]">
                                         </td>
                                     </tr>
                                 @endforeach
@@ -77,9 +73,17 @@
                         </table>
                     </div>
 
+                    <!-- Loading Overlay and Spinner -->
+                    <div id="loadingOverlay"></div>
+                    <div id="loadingSpinner" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
                     <!-- Button Simpan Akses di sisi kanan -->
                     <div class="mt-3 d-flex justify-content-end">
-                        <button type="button" class="btn btn-primary">Simpan Akses</button>
+                        <button type="button" class="btn btn-primary" id="saveAccessButton">Simpan Akses</button>
                     </div>
                 </div>
             </div>
@@ -88,10 +92,8 @@
 @endsection
 
 @section('scripts')
-
     <script>
         $(document).ready(function() {
-            // Initialize DataTable
             $('#menuAccessTable').DataTable();
 
             setTimeout(function() {
@@ -102,27 +104,138 @@
                 $('#successAlert').fadeOut('slow');
             }, 4000);
 
+            // Function to load menu access based on role
+            function loadMenuAccess(roleId) {
+                $('input[type=checkbox]').prop('checked', false);
+                var formData = new FormData();
+                formData.append('data', JSON.stringify({ "role_id": roleId }));
+                formData.append('_token', '{{ csrf_token() }}');
+
+                $('#loadingOverlay, #loadingSpinner').show(); // Show loading spinner and overlay
+
+                $.ajax({
+                    url: "{{ route('api.menu.access') }}",
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        var data = response.data;
+
+                        $.each(data, function(menuId, access) {
+                            var row = $('tr[data-menu-id="' + access.menu_id + '"]');
+                            row.find('input[name="permissions[' + access.menu_id + '][read]"]')
+                                .prop('checked', access.can_read == 1);
+                            row.find('input[name="permissions[' + access.menu_id + '][create]"]')
+                                .prop('checked', access.can_create == 1);
+                            row.find('input[name="permissions[' + access.menu_id + '][update]"]')
+                                .prop('checked', access.can_update == 1);
+                            row.find('input[name="permissions[' + access.menu_id + '][delete]"]')
+                                .prop('checked', access.can_delete == 1);
+                        });
+                    },
+                    error: function(xhr) {
+                        console.error("An error occurred:", xhr.responseText);
+                    },
+                    complete: function() {
+                        $('#loadingOverlay, #loadingSpinner').hide(); // Hide spinner and overlay after completion
+                    }
+                });
+            }
+
+            // When page loads, automatically load access for the first role
+            var firstRoleId = $('#selectRole option:first').val();
+            if (firstRoleId) {
+                loadMenuAccess(firstRoleId);
+            }
+
             $('#selectRole').change(function() {
                 var roleId = $(this).val();
-                // Fetch the permissions for the selected role and update the checkboxes accordingly
-                // This could involve an AJAX request to fetch permissions from the server
+                if (roleId) {
+                    loadMenuAccess(roleId);
+                }
             });
 
-            // Logic to automatically check "read" when "create", "update", or "delete" is checked
             $('input[type=checkbox]').on('change', function() {
-                var row = $(this).closest('tr'); // Get the row of the checkbox that was clicked
-                var readCheckbox = row.find(
-                    'input[name$="[read]"]'); // Find the read checkbox in the same row
+                var row = $(this).closest('tr');
+                var readCheckbox = row.find('input[name$="[read]"]');
                 var createCheckbox = row.find('input[name$="[create]"]');
                 var updateCheckbox = row.find('input[name$="[update]"]');
                 var deleteCheckbox = row.find('input[name$="[delete]"]');
 
-                // If any of the create, update, or delete checkboxes is checked, check the read checkbox
-                if (createCheckbox.is(':checked') || updateCheckbox.is(':checked') || deleteCheckbox.is(
-                        ':checked')) {
+                if (createCheckbox.is(':checked') || updateCheckbox.is(':checked') || deleteCheckbox.is(':checked')) {
                     readCheckbox.prop('checked', true);
                 }
             });
+
+            $('#saveAccessButton').click(function() {
+                var roleId = $('#selectRole').val();
+                var accessData = [];
+
+                $('#menuAccessTable tbody tr').each(function() {
+                    var menuId = $(this).data('menu-id');
+                    var canRead = $(this).find('input[name="permissions[' + menuId + '][read]"]').is(':checked') ? 1 : 0;
+                    var canCreate = $(this).find('input[name="permissions[' + menuId + '][create]"]').is(':checked') ? 1 : 0;
+                    var canUpdate = $(this).find('input[name="permissions[' + menuId + '][update]"]').is(':checked') ? 1 : 0;
+                    var canDelete = $(this).find('input[name="permissions[' + menuId + '][delete]"]').is(':checked') ? 1 : 0;
+
+                    accessData.push({
+                        menu_id: menuId,
+                        can_read: canRead,
+                        can_create: canCreate,
+                        can_update: canUpdate,
+                        can_delete: canDelete,
+                        role_id: roleId
+                    });
+                });
+
+                var formData = new FormData();
+                formData.append('data', JSON.stringify(accessData));
+                formData.append('_token', '{{ csrf_token() }}');
+
+                $('#loadingOverlay, #loadingSpinner').show(); // Show loading spinner and overlay
+
+                $.ajax({
+                    url: "{{ route('api.update.menu.access') }}",
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        snackbar('success', 'Akses berhasil disimpan.', 3000);
+                    },
+                    error: function(xhr) {
+                        snackbar('error', 'Akses Gagal disimpan.', 3000);
+                        console.error("An error occurred:", xhr.responseText);
+                    },
+                    complete: function() {
+                        $('#loadingOverlay, #loadingSpinner').hide(); // Hide spinner and overlay after completion
+                    }
+                });
+            });
         });
     </script>
+@endsection
+
+@section('styles')
+<style>
+    #loadingSpinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+    }
+    /* Overlay to prevent interaction during loading */
+    #loadingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        z-index: 9998;
+        display: none;
+    }
+</style>
 @endsection

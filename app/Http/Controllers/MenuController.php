@@ -21,7 +21,7 @@ class MenuController extends Controller
 
         $data = [
             'listMenu' => $listMenu,
-            'type' => $menuType
+            'type' => $menuType,
         ];
 
         return view('content.menu.index', $data);
@@ -43,13 +43,9 @@ class MenuController extends Controller
 
     public function menuAccess()
     {
-        $selectedRoleId = null;
         $roles = Role::all();
-        $rolePermissions = RolePermission::where('role_id', $selectedRoleId)->get()->keyBy('menu_id');
-
         $data = [
             'roles' => $roles,
-            'roleAccess' => $rolePermissions
         ];
 
         return view('content.menu.access', $data);

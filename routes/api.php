@@ -31,3 +31,5 @@ Route::post('/menu/move-up', [MenuController::class, 'menuMoveUp'])->name('api.m
 Route::post('/menu/move-down', [MenuController::class, 'menuMoveDown'])->name('api.menu.down');
 Route::post('/menu/save', [MenuController::class, 'menuSave'])->name('api.menu.save');
 Route::post('/menu/destroy', [MenuController::class, 'menuDelete'])->name('api.menu.destroy');
+Route::post('/menu/access', [MenuController::class, 'menuAccess'])->name('api.menu.access');
+Route::post('/menu/access/change', [MenuController::class, 'updateMenuAccess'])->name('api.update.menu.access');
