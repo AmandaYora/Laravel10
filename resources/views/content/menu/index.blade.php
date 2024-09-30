@@ -180,7 +180,6 @@
                     <button class="btn btn-danger btn-remove-submenu" type="button"><i data-feather="trash-2"></i></button>
                 </div>`;
             $('#submenuContainer').append(subMenuHtml);
-            feather.replace(); // Update feather icons
         });
 
         $(document).on('click', '.btn-remove-submenu', function() {
@@ -223,6 +222,9 @@
                         $('#addMenuModal').modal('hide');
                         updateTable(response.data);
                         snackbar('success', 'Menu berhasil disimpan.', 3000);
+                        setTimeout(function() {
+                                window.location.reload();
+                            }, 3000);
                     } else {
                         snackbar('error', 'Terjadi kesalahan: ' + response.info, 5000);
                     }
@@ -249,6 +251,9 @@
                         if (response.code === 0) {
                             updateTable(response.data);
                             snackbar('success', 'Menu berhasil dihapus.', 3000);
+                            setTimeout(function() {
+                                window.location.reload();
+                            }, 3000);
                         } else {
                             snackbar('error', 'Terjadi kesalahan: ' + response.info, 5000);
                         }
@@ -338,6 +343,8 @@
         }
 
         bindButtonEvents();
+
+        feather.replace();
     });
 </script>
 @endsection

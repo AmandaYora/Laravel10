@@ -34,7 +34,8 @@ Route::middleware(['check.token'])->group(function () {
     Route::get('/settings/menus', [MenuController::class, 'index'])->name('menus.index');
     Route::post('/change-role', [MenuController::class, 'changeRole'])->name('change.role');
 
-    Route::get('/settings/roles', [RoleController::class, 'index'])->name('roles.index'); 
+    Route::get('/settings/roles', [RoleController::class, 'index'])->name('roles.index');
+    Route::get('/settings/menu-access', [MenuController::class, 'menuAccess'])->name('menus.access'); 
     Route::post('/settings/roles/save', [RoleController::class, 'saveRole'])->name('roles.save'); 
     Route::delete('/settings/roles/{role_id}', [RoleController::class, 'deleteRole'])->name('roles.delete'); 
 

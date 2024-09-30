@@ -67,6 +67,9 @@ $role = session('user.role');
                         <li class="nav-item">
                             <a href="{{ route('roles.index') }}" class="nav-link">Roles Management</a> 
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('menus.access') }}" class="nav-link">Menu Access</a> 
+                        </li>
                     </ul>
                 </div>
             </li>
