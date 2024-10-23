@@ -154,6 +154,9 @@ class Person extends Model
     public function getCurrentUser($guid = null)
     {
         $result = new Result();
+        $result->code = Result::CODE_ERROR;
+        $result->info = 'failed';
+        $result->message = self::USER_NOT_FOUND_MESSAGE;
 
         try {
             $query = User::with(['roles.role']);
@@ -200,10 +203,12 @@ class Person extends Model
             }
 
         } catch (\Exception $e) {
-            return false;
+            $result->info = "failed get data : $e";
+            return $result;
         }
 
-        return false;
+        $result->info = "failed get data";
+        return $result;
     }
 
     public function getAllUsers($mode = self::MODE_TOKEN)
