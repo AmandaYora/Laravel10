@@ -10,9 +10,15 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    public function run(): void
+    public function run()
     {
-        $this->call(RolesTableSeeder::class);
+        $this->call([
+            RolesTableSeeder::class,
+            UserSeeder::class,
+            RoleAccessSeeder::class,
+            MenuTypeSeeder::class,
+            MenuSeeder::class
+        ]);
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([
