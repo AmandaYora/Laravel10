@@ -18,6 +18,12 @@ class RolesTableSeeder extends Seeder
     {
         DB::table('roles')->insert([
             [
+                'role_name' => 'Superadmin',
+                'description' => 'Superadmin role with highest permissions',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
                 'role_name' => 'Admin',
                 'description' => 'Administrator role with full permissions',
                 'created_at' => Carbon::now(),
