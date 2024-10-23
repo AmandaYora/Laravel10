@@ -33,4 +33,13 @@ class AuthController extends Controller
             return back()->withErrors(['message' => 'Login gagal, username atau password salah.']);
         }
     }
+
+    public function logout()
+    {
+        // Menghapus semua data session
+        session()->flush();
+        
+        // Redirect ke halaman login
+        return redirect('/login')->with('success', 'Logout berhasil');
+    }
 }

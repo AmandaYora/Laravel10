@@ -21,6 +21,7 @@ Route::get('/login', [AuthController::class, 'index'])->name('login');
 Route::post('/auth-login', [AuthController::class, 'login'])->name('auth.login');
 
 Route::middleware(['check.token'])->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
     Route::get('/', function () {
         return view('welcome');

@@ -3,6 +3,7 @@
 @section('title', 'Pengiriman Dashboard')
 
 @section('content')
+
     <div class="row">
         <div class="col-md-12 grid-margin stretch-card">
             <div class="card">
@@ -43,6 +44,13 @@
                             </thead>
                             <tbody>
                                 @foreach ($users as $user)
+                                    @php
+                                        $isSuperadmin = collect($user->roles)->contains(function ($role) {
+                                            return $role['role_id'] === 1;
+                                        });
+                                    @endphp
+
+                                    @if (!($activeRole['role_id'] != $code_superadmin && $isSuperadmin))
                                     <tr>
                                         <td>{{ $user->code }}</td>
                                         <td>{{ $user->name }}</td>
@@ -62,7 +70,7 @@
                                                 onclick="showUserDetails({{ json_encode($user->attribute) }}, '{{ $user->user_id }}', '{{ $user->code }}', '{{ $user->name }}')">
                                                 <i data-feather="eye"></i>
                                             </button>
-
+                                            @if (($activeRole['role_id'] == $code_admin || $activeRole['role_id'] == $code_superadmin) && $user->user_id != $currentUser->data->user_id)
                                             <form action="{{ route('users.delete', $user->user_id) }}" method="POST"
                                                 style="display:inline;">
                                                 @csrf
@@ -71,6 +79,7 @@
                                                     <i data-feather="trash-2"></i>
                                                 </button>
                                             </form>
+                                            @endif
                                             @if ($activeRole['role_id'] == $code_admin || $activeRole['role_id'] == $code_superadmin)
                                                 <div class="dropdown d-inline">
                                                     <button class="btn btn-sm btn-outline-dark" type="button"
@@ -92,6 +101,7 @@
                                             @endif
                                         </td>
                                     </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>

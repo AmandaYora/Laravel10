@@ -33,9 +33,9 @@
                     </ul>
 
                     <!-- Form tersembunyi untuk logout -->
-                    {{-- <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                         @csrf
-                    </form> --}}
+                    </form>
 
                 </div>
             </li>
