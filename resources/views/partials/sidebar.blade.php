@@ -15,13 +15,17 @@ $role = session('user.role');
     </div>
     <div class="sidebar-body">
         <ul class="nav">
-
             <li class="nav-item nav-category">Main</li>
             {{-- Looping menu --}}
             @foreach($menus as $menu)
-                @if($menu->menu_type_id == 1)
+                
+                @php
+                    $canRead = isset($menu['permissions'][0]['can_read']) ? $menu['permissions'][0]['can_read'] : null;
+                @endphp
+
+                @if($menu->menu_type_id == 1 && $canRead == 1)
                     <li class="nav-item">
-                        <a href="{{ url($menu->menu_redirect) }}" class="nav-link">
+                        <a href="{{ route('setActiveMenu', ['menu_id' => $menu->menu_id, 'redirect' => $menu->menu_redirect]) }}" class="nav-link">
                             <i class="link-icon" data-feather="{{ $menu->menu_icon }}"></i>
                             <span class="link-title">{{ $menu->menu }}</span> 
                         </a>

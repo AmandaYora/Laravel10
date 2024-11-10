@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\UserController;
@@ -38,6 +39,6 @@ Route::middleware(['check.token'])->group(function () {
     Route::get('/settings/roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('/settings/menu-access', [MenuController::class, 'menuAccess'])->name('menus.access'); 
     Route::post('/settings/roles/save', [RoleController::class, 'saveRole'])->name('roles.save'); 
-    Route::delete('/settings/roles/{role_id}', [RoleController::class, 'deleteRole'])->name('roles.delete'); 
-
+    Route::delete('/settings/roles/{role_id}', [RoleController::class, 'deleteRole'])->name('roles.delete');
+    Route::get('/set-active-menu', [MenuController::class, 'setActiveMenu'])->name('setActiveMenu');
 });

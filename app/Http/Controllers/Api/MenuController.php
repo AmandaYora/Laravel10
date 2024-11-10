@@ -113,13 +113,19 @@ class MenuController extends Controller
         $update = false;
         $menuId = null;
 
+        $column_table = $data['column_table'] ?? null;
+        $columns = [];
+        if ($column_table) {
+            $columns = explode(',', $column_table) ?? $column_table;
+        }
+
         if (isset($data['menu_id'])) {
             $update = true;
             $menuId = $data['menu_id'];
         }
 
         $menuModel = new Menus();
-        $save = $menuModel->saveMenu($data, $update, $menuId);
+        $save = $menuModel->saveMenu($data, $update, $menuId, $columns);
 
         if ($save){
             $result->data =  $menus = Menu::with('submenus', 'menuType')

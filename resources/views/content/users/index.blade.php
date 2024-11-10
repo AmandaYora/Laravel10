@@ -10,9 +10,11 @@
                 <div class="card-body">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h6 class="card-title mb-0">Data Users</h6>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUserModal">
-                            Add User
-                        </button>
+                        @if ($activeMenu['can_create'])
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUserModal">
+                                Add User
+                            </button>
+                        @endif
                     </div>
 
 
@@ -29,83 +31,90 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
-
-                    <div class="table-responsive">
-                        <table id="dataTableExample" class="table">
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>Is Verified</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($users as $user)
-                                    @php
-                                        $isSuperadmin = collect($user->roles)->contains(function ($role) {
-                                            return $role['role_id'] === 1;
-                                        });
-                                    @endphp
-
-                                    @if (!($activeRole['role_id'] != $code_superadmin && $isSuperadmin))
+                    @if ($activeMenu['can_read'])
+                        <div class="table-responsive">
+                            <table id="dataTableExample" class="table">
+                                <thead>
                                     <tr>
-                                        <td>{{ $user->code }}</td>
-                                        <td>{{ $user->name }}</td>
-                                        <td>{{ $user->phone }}</td>
-                                        <td>{{ $user->email }}</td>
-                                        <td>{{ $user->is_verify ? 'Yes' : 'No' }}</td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-outline-primary"
-                                                data-bs-toggle="modal" data-bs-target="#editUserModal"
-                                                data-id="{{ $user->user_id }}" data-code="{{ $user->code }}"
-                                                data-name="{{ $user->name }}" data-phone="{{ $user->phone }}"
-                                                data-email="{{ $user->email }}" data-is_verify="{{ $user->is_verify }}">
-                                                <i data-feather="edit"></i>
-                                            </button>
-
-                                            <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                onclick="showUserDetails({{ json_encode($user->attribute) }}, '{{ $user->user_id }}', '{{ $user->code }}', '{{ $user->name }}')">
-                                                <i data-feather="eye"></i>
-                                            </button>
-                                            @if (($activeRole['role_id'] == $code_admin || $activeRole['role_id'] == $code_superadmin) && $user->user_id != $currentUser->data->user_id)
-                                            <form action="{{ route('users.delete', $user->user_id) }}" method="POST"
-                                                style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i data-feather="trash-2"></i>
-                                                </button>
-                                            </form>
-                                            @endif
-                                            @if ($activeRole['role_id'] == $code_admin || $activeRole['role_id'] == $code_superadmin)
-                                                <div class="dropdown d-inline">
-                                                    <button class="btn btn-sm btn-outline-dark" type="button"
-                                                        id="dropdownMenuButton{{ $user->user_id }}"
-                                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                                        <i data-feather="more-horizontal"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu"
-                                                        aria-labelledby="dropdownMenuButton{{ $user->user_id }}">
-                                                        <li>
-                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                                data-bs-target="#roleAccessModal"
-                                                                onclick="loadRoles({{ $user->user_id }}, {{ json_encode($user->roles) }})">
-                                                                <i data-feather="lock"></i> Role Access
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            @endif
-                                        </td>
+                                        <th>Code</th>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                        <th>Email</th>
+                                        <th>Is Verified</th>
+                                        <th>Action</th>
                                     </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    @foreach ($users as $user)
+                                        @php
+                                            $isSuperadmin = collect($user->roles)->contains(function ($role) {
+                                                return $role['role_id'] === 1;
+                                            });
+                                        @endphp
+
+                                        @if (!($activeRole['role_id'] != $code_superadmin && $isSuperadmin))
+                                        <tr>
+                                            <td>{{ $user->code }}</td>
+                                            <td>{{ $user->name }}</td>
+                                            <td>{{ $user->phone }}</td>
+                                            <td>{{ $user->email }}</td>
+                                            <td>{{ $user->is_verify ? 'Yes' : 'No' }}</td>
+                                            <td>
+                                                @if ($activeMenu['can_update'])
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                        data-bs-toggle="modal" data-bs-target="#editUserModal"
+                                                        data-id="{{ $user->user_id }}" data-code="{{ $user->code }}"
+                                                        data-name="{{ $user->name }}" data-phone="{{ $user->phone }}"
+                                                        data-email="{{ $user->email }}" data-is_verify="{{ $user->is_verify }}">
+                                                        <i data-feather="edit"></i>
+                                                    </button>
+                                                @endif
+
+                                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                    onclick="showUserDetails({{ json_encode($user->attribute) }}, '{{ $user->user_id }}', '{{ $user->code }}', '{{ $user->name }}')">
+                                                    <i data-feather="eye"></i>
+                                                </button>
+
+                                                @if ($activeMenu['can_delete'])
+                                                    @if (($activeRole['role_id'] == $code_admin || $activeRole['role_id'] == $code_superadmin) && $user->user_id != $currentUser->data->user_id)
+                                                    <form action="{{ route('users.delete', $user->user_id) }}" method="POST"
+                                                        style="display:inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                            <i data-feather="trash-2"></i>
+                                                        </button>
+                                                    </form>
+                                                    @endif
+                                                @endif
+                                                
+                                                @if ($activeRole['role_id'] == $code_admin || $activeRole['role_id'] == $code_superadmin)
+                                                    <div class="dropdown d-inline">
+                                                        <button class="btn btn-sm btn-outline-dark" type="button"
+                                                            id="dropdownMenuButton{{ $user->user_id }}"
+                                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i data-feather="more-horizontal"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu"
+                                                            aria-labelledby="dropdownMenuButton{{ $user->user_id }}">
+                                                            <li>
+                                                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                                    data-bs-target="#roleAccessModal"
+                                                                    onclick="loadRoles({{ $user->user_id }}, {{ json_encode($user->roles) }})">
+                                                                    <i data-feather="lock"></i> Role Access
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

@@ -51,4 +51,10 @@ class MenuController extends Controller
         return view('content.menu.access', $data);
     }
 
+    public function setActiveMenu(Request $request)
+    {
+        $request->session()->put('activeMenu', $request->menu_id);
+
+        return redirect($request->redirect);
+    }
 }

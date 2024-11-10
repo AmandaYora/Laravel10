@@ -110,6 +110,10 @@
                         </button>
                         <div id="submenuContainer"></div>
                     </div>
+                    <div id="additionalPlaceholder" class="mb-3" style="display: none;">
+                        <label for="additionalInfo" class="form-label">Column Table</label>
+                        <input type="text" class="form-control" id="additionalInfo" name="additional_info" placeholder="user_id, name, username, ...">
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -126,13 +130,15 @@
 <script>
     $(document).ready(function() {
         feather.replace(); // Replace all feather icons
-
+        $('#additionalPlaceholder').show();
         $('#menuType').on('change', function() {
             if ($(this).val() == '2') {
                 $('#submenuSection').show();
+                $('#additionalPlaceholder').hide();
             } else {
                 $('#submenuSection').hide();
                 $('#submenuContainer').empty();
+                $('#additionalPlaceholder').show();
             }
         });
 
@@ -195,6 +201,7 @@
                 menu: $('#menuName').val(),
                 menu_redirect: $('#menuRedirect').val(),
                 menu_type_id: $('#menuType').val(),
+                column_table: $('#additionalInfo').val(),
                 submenus: []
             };
 
