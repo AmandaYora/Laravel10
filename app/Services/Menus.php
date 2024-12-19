@@ -303,13 +303,13 @@ class Menus
 
             $dataAttributes = '';
             foreach ($columns as $col) {
-                $dataAttributes .= " data-{$col}=\"{{ \$item->{$col} }}\"";
+                $dataAttributes .= " data-{$col}='{{ \$item->{$col} }}'";
             }
 
             $tableColumns .= <<<EOD
     <td>
-        <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#editItemModal" 
-                data-id="{{ \$item->{$columns[0]} }}" $dataAttributes>
+        <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#itemModal" 
+                data-id="{{ \$item->{$columns[0]} }}" $dataAttributes data-action="edit">
             Edit
         </button>
         <form action="{{ route('$menuName.delete', \$item->{$columns[0]}) }}" method="POST" style="display:inline;">
@@ -326,23 +326,15 @@ class Menus
         $modalFields = '';
         foreach ($columns as $col) {
             $modalFields .= "<div class=\"mb-3\">
-                                <label for=\"add" . ucfirst($col) . "\" class=\"form-label\">" . ucfirst($col) . "</label>
-                                <input type=\"text\" class=\"form-control\" id=\"add" . ucfirst($col) . "\" name=\"$col\" required>
+                                <label for=\"modal" . ucfirst($col) . "\" class=\"form-label\">" . ucfirst($col) . "</label>
+                                <input type=\"text\" class=\"form-control\" id=\"modal" . ucfirst($col) . "\" name=\"$col\" required>
                             </div>\n";
         }
 
-        $editModalFields = '';
-        foreach ($columns as $col) {
-            $editModalFields .= "<div class=\"mb-3\">
-                                    <label for=\"edit" . ucfirst($col) . "\" class=\"form-label\">" . ucfirst($col) . "</label>
-                                    <input type=\"text\" class=\"form-control\" id=\"edit" . ucfirst($col) . "\" name=\"$col\" required>
-                                </div>\n";
-        }
-
-        // Menghasilkan string JavaScript secara eksplisit untuk setiap kolom
         $jsSetFields = '';
         foreach ($columns as $col) {
-            $jsSetFields .= "$('#edit" . ucfirst($col) . "').val(button.data('$col'));\n";
+            $jsSetFields .= "$('#modal" . ucfirst($col) . "').val(button.data('$col'));
+    ";
         }
 
         return <<<EOD
@@ -351,121 +343,99 @@ class Menus
     @section('title', ucfirst('$menuName') . ' Management')
 
     @section('content')
-        <div class="row">
-            <div class="col-md-12 grid-margin stretch-card">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h6 class="card-title mb-0">Data $menuName</h6>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                                Tambah $menuName
-                            </button>
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="card-title mb-0">Data $menuName</h6>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#itemModal" data-action="add">
+                            Tambah $menuName
+                        </button>
+                    </div>
+
+                    @if (session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert">
+                            <strong>Error!</strong> {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
+                    @endif
 
-                        @if (session('error'))
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert">
-                                <strong>Error!</strong> {{ session('error') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        @endif
+                    @if (session('success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert">
+                            <strong>Success!</strong> {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
 
-                        @if (session('success'))
-                            <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert">
-                                <strong>Success!</strong> {{ session('success') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        @endif
-
-                        <div class="table-responsive">
-                            <table id="dataTableExample" class="table">
-                                <thead>
+                    <div class="table-responsive">
+                        <table id="dataTableExample" class="table">
+                            <thead>
+                                <tr>
+                                    $tableHeaders
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (\$$menuName as \$item)
                                     <tr>
-                                        $tableHeaders
+                                        $tableColumns
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (\$$menuName as \$item)
-                                        <tr>
-                                            $tableColumns
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Modal for Adding Item -->
-        <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Tambah $menuName</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form method="POST" action="{{ route('$menuName.save') }}">
-                        @csrf
-                        <div class="modal-body">
-                            $modalFields
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Tambah $menuName</button>
-                        </div>
-                    </form>
+    <div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Tambah/Edit $menuName</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <form method="POST" id="modalForm">
+                    @csrf
+                    <input type="hidden" id="modalItemId" name="id">
+                    <div class="modal-body">
+                        $modalFields
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" id="modalSubmit">Submit</button>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <!-- Modal for Editing Item -->
-        <div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Edit $menuName</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form method="POST" action="{{ route('$menuName.update') }}">
-                        @csrf
-                        <input type="hidden" id="editItemId" name="id">
-                        <div class="modal-body">
-                            $editModalFields
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Save changes</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+    </div>
     @endsection
 
     @section('scripts')
-        <script>
-            $('#editItemModal').on('show.bs.modal', function(event) {
-                var button = $(event.relatedTarget);
-                var id = button.data('id');
-                $('#editItemId').val(id);
+    <script>
+        $('#itemModal').on('show.bs.modal', function(event) {
+            var button = $(event.relatedTarget);
+            var action = button.data('action');
+            var id = button.data('id') || '';
+            var modal = $(this);
 
+            if (action === 'edit') {
+                modal.find('#modalTitle').text('Edit $menuName');
+                modal.find('#modalForm').attr('action', `{{ route('$menuName.update') }}`);
+                modal.find('#modalItemId').val(id);
                 $jsSetFields
-            });
-
-            $(document).ready(function() {
-                setTimeout(function() {
-                    $('#errorAlert').fadeOut('slow');
-                }, 4000);
-
-                setTimeout(function() {
-                    $('#successAlert').fadeOut('slow');
-                }, 4000);
-            });
-        </script>
+            } else {
+                modal.find('#modalTitle').text('Tambah $menuName');
+                modal.find('#modalForm').attr('action', `{{ route('$menuName.save') }}`);
+                modal.find('#modalForm').trigger('reset');
+            }
+        });
+    </script>
     @endsection
     EOD;
     }
+
 
     private function generateController($menuName, $columns = [])
     {
@@ -473,33 +443,28 @@ class Menus
         $controllerPath = app_path("Http/Controllers/{$controllerName}.php");
         $primaryKey = $columns[0] ?? 'id';
 
-        // Membuat template controller
         $controllerTemplate = <<<EOD
     <?php
 
     namespace App\Http\Controllers;
 
-    use App\Models\\$menuName;
+    use App\Models\$menuName;
     use Illuminate\Http\Request;
     use Illuminate\Support\Str;
 
     class $controllerName extends Controller
     {
-        // Method index untuk menampilkan halaman utama
         public function index()
         {
             \$$menuName = $menuName::all();
             return view('content.$menuName.index', compact('$menuName'));
         }
 
-        // Method untuk menyimpan data baru atau update data
         public function save$menuName(Request \$request)
         {
-            // Ambil hanya kolom yang ada dalam array \$columns
             \$data = \$request->only([
     EOD;
 
-        // Tambahkan kolom ke dalam list pengambilan data dari request
         foreach ($columns as $column) {
             $controllerTemplate .= "\n            '$column',";
         }
@@ -528,7 +493,6 @@ class Menus
             }
         }
 
-        // Method untuk menghapus data
         public function delete$menuName(\$id)
         {
             \$item = $menuName::find(\$id);
@@ -540,21 +504,20 @@ class Menus
     }
     EOD;
 
-        // Simpan file controller jika belum ada
         if (!File::exists($controllerPath)) {
             File::put($controllerPath, $controllerTemplate);
         }
     }
 
+
     private function generateMigrations($tableName, $columns = [])
     {
-        $primaryKey = $columns[0] ?? 'id'; // Primary key adalah kolom pertama
-        $timestamp = date('Y_m_d_His'); // Digunakan untuk nama file migration unik berdasarkan waktu
+        $primaryKey = $columns[0] ?? 'id';
+        $timestamp = date('Y_m_d_His');
         $migrationName = "create_{$tableName}_table";
         $fileName = "{$timestamp}_{$migrationName}.php";
         $migrationPath = database_path("migrations/{$fileName}");
 
-        // Awal dari template migration
         $migrationTemplate = <<<EOD
     <?php
 
@@ -564,34 +527,22 @@ class Menus
 
     class Create{$tableName}Table extends Migration
     {
-        /**
-         * Run the migrations.
-         *
-         * @return void
-         */
         public function up()
         {
             Schema::create('$tableName', function (Blueprint \$table) {
-                \$table->id('$primaryKey'); // Menggunakan primary key yang ditentukan
+                \$table->id('$primaryKey');
     EOD;
 
-        // Tambahkan kolom selain primary key
         foreach (array_slice($columns, 1) as $column) {
             $migrationTemplate .= "\n            \$table->string('$column');";
         }
 
-        // Tambahkan timestamps di akhir schema
         $migrationTemplate .= <<<EOD
 
                 \$table->timestamps();
             });
         }
 
-        /**
-         * Reverse the migrations.
-         *
-         * @return void
-         */
         public function down()
         {
             Schema::dropIfExists('$tableName');
@@ -599,11 +550,11 @@ class Menus
     }
     EOD;
 
-        // Simpan file migration jika belum ada
         if (!File::exists($migrationPath)) {
             File::put($migrationPath, $migrationTemplate);
         }
     }
+
 
     public function menuDelete($menuId = null)
     {
@@ -675,6 +626,5 @@ class Menus
 
         return true;
     }
-
     
 }
